@@ -45,6 +45,9 @@ func (d *Document) Build() (*gofpdf.Fpdf, error) {
 	d.pdf.AddPage()
 
 	// Load font
+	d.pdf.SetFontLocation("font")
+	d.pdf.AddUTF8Font("NotoSerif", "", "Noto-Serif/NotoSerif-Regular.ttf")
+	d.pdf.AddUTF8Font("NotoSerif", "B", "Noto-Serif/NotoSerif-Bold.ttf")
 	d.pdf.SetFont("Helvetica", "", 12)
 
 	// Appenf document title
@@ -105,11 +108,11 @@ func (d *Document) appendTitle(pdf *gofpdf.Fpdf) {
 
 	// Draw rect
 	pdf.SetFillColor(DarkBgColor[0], DarkBgColor[1], DarkBgColor[2])
-	pdf.Rect(120, BaseMarginTop, 80, 10, "F")
+	pdf.Rect(120, BaseMarginTop, 80, 11, "F")
 
 	// Draw text
 	pdf.SetFont("Helvetica", "", 14)
-	pdf.CellFormat(80, 10, encodeString(title), "0", 0, "C", false, 0, "")
+	pdf.CellFormat(80, 11, encodeString(title), "0", 0, "C", false, 0, "")
 }
 
 func (d *Document) appendMetas(pdf *gofpdf.Fpdf) {
