@@ -87,14 +87,14 @@ func (c *Contact) appendContactTODoc(x float64, y float64, fill bool, logoAlign 
 		// Name rect
 		// Set name
 		pdf.SetFont("NotoSerif", "B", 10)
-		if len(c.Name) < 59 {
+		if len(c.Name) < 58 {
 			pdf.Rect(x, pdf.GetY(), 109, 8, "F")
 
 			pdf.Cell(40, 8, c.Name)
 		} else {
 			heightOfname = 3
 
-			chunks := Chunks(c.Name, 59)
+			chunks := Chunks(c.Name, 58)
 			if len(chunks) > 2 {
 				heightOfname += len(chunks)
 			}
@@ -110,7 +110,7 @@ func (c *Contact) appendContactTODoc(x float64, y float64, fill bool, logoAlign 
 				} else {
 					nextArrFirstR = r[len(r)-1]
 				}
-				if !unicode.IsSpace(r[len(r)-1]) && len(chunks[jj]) >= 59 && !unicode.IsSpace(nextArrFirstR) {
+				if !unicode.IsSpace(r[len(r)-1]) && len(chunks[jj]) >= 58 && !unicode.IsSpace(nextArrFirstR) {
 					pdf.Cell(40, float64(height), trimLastChar(chunks[jj])+"-")
 				} else {
 					if jj > 0 && !unicode.IsSpace(r[len(r)-1]) && !unicode.IsSpace(rune(chunks[jj][0])) {

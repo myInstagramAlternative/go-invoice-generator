@@ -3,6 +3,8 @@ package generator
 import (
 	"bytes"
 	"fmt"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/jung-kurt/gofpdf"
@@ -45,10 +47,16 @@ func (d *Document) Build() (*gofpdf.Fpdf, error) {
 	d.pdf.AddPage()
 
 	// Load font
-	d.pdf.SetFontLocation("font")
-	d.pdf.AddUTF8Font("NotoSerif", "", "Noto-Serif/NotoSerif-Regular.ttf")
-	d.pdf.AddUTF8Font("NotoSerif", "B", "Noto-Serif/NotoSerif-Bold.ttf")
-	d.pdf.SetFont("Helvetica", "", 12)
+	ucd, _ := os.UserConfigDir()
+	//if errUcd != nil {
+	//	log.Fatal("NewYamlerrUcd:", errUcd)
+	//}
+
+	d.pdf.SetFontLocation(filepath.Join(ucd, ".abak", "fonts"))
+	d.pdf.AddUTF8Font("NotoSerif", "", "NotoSerif-Regular.ttf")
+	d.pdf.AddUTF8Font("NotoSerif", "B", "NotoSerif-Bold.ttf")
+
+	d.pdf.SetFont("NotoSerif", "", 12)
 
 	// Appenf document title
 	d.appendTitle(d.pdf)
