@@ -87,16 +87,21 @@ func (c *Contact) appendContactTODoc(x float64, y float64, fill bool, logoAlign 
 		// Name rect
 		// Set name
 		pdf.SetFont("NotoSerif", "B", 10)
-		if len(c.Name) < 62 {
+		if len(c.Name) < 59 {
 			pdf.Rect(x, pdf.GetY(), 109, 8, "F")
 
 			pdf.Cell(40, 8, c.Name)
 		} else {
-			pdf.Rect(x, pdf.GetY(), 109, 11, "F")
+			heightOfname = 3
 
 			chunks := Chunks(c.Name, 59)
+			if len(chunks) > 2 {
+				heightOfname += len(chunks)
+			}
+			pdf.Rect(x, pdf.GetY(), 109, 8+float64(heightOfname), "F")
+
 			height := 8
-			heightOfname = 3
+
 			for jj := 0; jj < len(chunks); jj++ {
 				r := []rune(chunks[jj])
 				var nextArrFirstR rune
