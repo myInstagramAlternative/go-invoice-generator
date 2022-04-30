@@ -16,6 +16,7 @@ type Contact struct {
 	Name       string   `json:"name,omitempty" validate:"required,min=1,max=256"`
 	Logo       *[]byte  `json:"logo,omitempty"` // Logo byte array
 	Address    *Address `json:"address,omitempty"`
+	TaxId      string   `json:"tax_id,omitempty"`
 }
 
 func Chunks(s string, chunkSize int) []string {
@@ -134,6 +135,10 @@ func (c *Contact) appendContactTODoc(x float64, y float64, fill bool, logoAlign 
 			addrRectHeight = addrRectHeight + 5
 		}
 
+		if len(c.TaxId) > 0 {
+			addrRectHeight = addrRectHeight + 5
+		}
+
 		if len(c.Address.Address2) > 0 {
 			addrRectHeight = addrRectHeight + 5
 		}
@@ -149,6 +154,11 @@ func (c *Contact) appendContactTODoc(x float64, y float64, fill bool, logoAlign 
 		pdf.SetXY(x, pdf.GetY()+10+float64(heightOfname))
 		if len(c.Contractor) > 0 {
 			pdf.Cell(70, 5, "c/o "+c.Contractor)
+			pdf.SetXY(x, pdf.GetY()+5)
+		}
+
+		if len(c.TaxId) > 0 {
+			pdf.Cell(70, 5, c.TaxId)
 			pdf.SetXY(x, pdf.GetY()+5)
 		}
 
@@ -168,7 +178,7 @@ func trimLastChar(s string) string {
 
 func (c *Contact) appendCompanyContactToDoc(pdf *gofpdf.Fpdf) float64 {
 	x, y, _, _ := pdf.GetMargins()
-	return c.appendContactTODoc(x, y+35, true, "L", pdf)
+	return c.appendContactTODoc(x, y+40, true, "L", pdf)
 }
 
 func (c *Contact) appendCustomerContactToDoc(pdf *gofpdf.Fpdf) float64 {
