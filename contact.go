@@ -152,13 +152,14 @@ func (c *Contact) appendContactTODoc(x float64, y float64, fill bool, logoAlign 
 		// Set address
 		pdf.SetFont("NotoSerif", "", 10)
 		pdf.SetXY(x, pdf.GetY()+10+float64(heightOfname))
-		if len(c.Contractor) > 0 {
-			pdf.Cell(70, 5, "c/o "+c.Contractor)
-			pdf.SetXY(x, pdf.GetY()+5)
-		}
 
 		if len(c.TaxId) > 0 {
 			pdf.Cell(70, 5, c.TaxId)
+			pdf.SetXY(x, pdf.GetY()+5)
+		}
+
+		if len(c.Contractor) > 0 {
+			pdf.Cell(70, 5, "c/o "+c.Contractor)
 			pdf.SetXY(x, pdf.GetY()+5)
 		}
 
