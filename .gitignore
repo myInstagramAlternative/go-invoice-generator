@@ -71,3 +71,4 @@ tags
 
 /out.pdf
 .vscode/launch.json
+generator_test.go
