@@ -4,6 +4,8 @@ import (
 	"bytes"
 	b64 "encoding/base64"
 	"image"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/jung-kurt/gofpdf"
 )
@@ -14,6 +16,28 @@ type Contact struct {
 	Name       string   `json:"name,omitempty" validate:"required,min=1,max=256"`
 	Logo       *[]byte  `json:"logo,omitempty"` // Logo byte array
 	Address    *Address `json:"address,omitempty"`
+}
+
+func Chunks(s string, chunkSize int) []string {
+	if len(s) == 0 {
+		return nil
+	}
+	if chunkSize >= len(s) {
+		return []string{s}
+	}
+	var chunks []string = make([]string, 0, (len(s)-1)/chunkSize+1)
+	currentLen := 0
+	currentStart := 0
+	for i := range s {
+		if currentLen == chunkSize {
+			chunks = append(chunks, s[currentStart:i])
+			currentLen = 0
+			currentStart = i
+		}
+		currentLen++
+	}
+	chunks = append(chunks, s[currentStart:])
+	return chunks
 }
 
 func (c *Contact) appendContactTODoc(x float64, y float64, fill bool, logoAlign string, pdf *gofpdf.Fpdf) float64 {
@@ -51,14 +75,51 @@ func (c *Contact) appendContactTODoc(x float64, y float64, fill bool, logoAlign 
 
 	// Reset x
 	pdf.SetX(x)
+	var heightOfname int = 0
+	if len(c.Name) < 37 {
+		pdf.Rect(x, pdf.GetY(), 70, 8, "F")
 
-	// Name rect
-	pdf.Rect(x, pdf.GetY(), 70, 8, "F")
+		// Set name
+		pdf.SetFont("NotoSerif", "B", 10)
+		pdf.Cell(40, 8, c.Name)
+	} else {
 
-	// Set name
-	pdf.SetFont("Helvetica", "B", 10)
-	pdf.Cell(40, 8, c.Name)
-	pdf.SetFont("Helvetica", "", 10)
+		// Name rect
+		// Set name
+		pdf.SetFont("NotoSerif", "B", 10)
+		if len(c.Name) < 62 {
+			pdf.Rect(x, pdf.GetY(), 109, 8, "F")
+
+			pdf.Cell(40, 8, c.Name)
+		} else {
+			pdf.Rect(x, pdf.GetY(), 109, 11, "F")
+
+			chunks := Chunks(c.Name, 59)
+			height := 8
+			heightOfname = 3
+			for jj := 0; jj < len(chunks); jj++ {
+				r := []rune(chunks[jj])
+				var nextArrFirstR rune
+				if len(chunks) != jj+1 {
+					nextArrFirstR = []rune(chunks[jj+1])[0]
+				} else {
+					nextArrFirstR = r[len(r)-1]
+				}
+				if !unicode.IsSpace(r[len(r)-1]) && len(chunks[jj]) >= 59 && !unicode.IsSpace(nextArrFirstR) {
+					pdf.Cell(40, float64(height), trimLastChar(chunks[jj])+"-")
+				} else {
+					if jj > 0 && !unicode.IsSpace(r[len(r)-1]) && !unicode.IsSpace(rune(chunks[jj][0])) {
+						pdf.Cell(40, float64(height), chunks[jj-1][len(chunks[jj-1])-1:]+chunks[jj])
+					} else {
+						pdf.Cell(40, float64(height), chunks[jj])
+					}
+				}
+				height += 8
+				pdf.SetX(x)
+			}
+		}
+	}
+	pdf.SetFont("NotoSerif", "", 10)
 
 	if c.Address != nil {
 		// Address rect
@@ -76,11 +137,11 @@ func (c *Contact) appendContactTODoc(x float64, y float64, fill bool, logoAlign 
 			addrRectHeight = addrRectHeight - 5
 		}
 
-		pdf.Rect(x, pdf.GetY()+9, 70, addrRectHeight, "F")
+		pdf.Rect(x, pdf.GetY()+9+float64(heightOfname), 70, addrRectHeight, "F")
 
 		// Set address
-		pdf.SetFont("Helvetica", "", 10)
-		pdf.SetXY(x, pdf.GetY()+10)
+		pdf.SetFont("NotoSerif", "", 10)
+		pdf.SetXY(x, pdf.GetY()+10+float64(heightOfname))
 		if len(c.Contractor) > 0 {
 			pdf.Cell(70, 5, "c/o "+c.Contractor)
 			pdf.SetXY(x, pdf.GetY()+5)
@@ -90,6 +151,14 @@ func (c *Contact) appendContactTODoc(x float64, y float64, fill bool, logoAlign 
 	}
 
 	return pdf.GetY()
+}
+
+func trimLastChar(s string) string {
+	r, size := utf8.DecodeLastRuneInString(s)
+	if r == utf8.RuneError && (size == 0 || size == 1) {
+		size = 0
+	}
+	return s[:len(s)-size]
 }
 
 func (c *Contact) appendCompanyContactToDoc(pdf *gofpdf.Fpdf) float64 {
